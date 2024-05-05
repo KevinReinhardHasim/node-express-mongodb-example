@@ -11,7 +11,13 @@ const { password } = require('../../../models/users-schema');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await usersService.getUsers();
+    let pn = request.query.page_number;
+    let ps = request.query.page_size;
+    let se = request.query.search;
+    let so = request.query.sort;
+    const users = await usersService.getUsers(
+      pn,ps,se,so
+    );
     return response.status(200).json(users);
   } catch (error) {
     return next(error);
@@ -53,16 +59,12 @@ async function createUser(request, response, next) {
     const password = request.body.password;
 
     const confirm_Password = request.body.confirm_Password;
-    if ( password !== confirm_Password ) {
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        "passnya gk cocok"
-      )
+    if (password !== confirm_Password) {
+      throw errorResponder(errorTypes.INVALID_PASSWORD, 'passnya gk cocok');
     }
 
-
     const fail = await usersService.checkEmail(email);
-    if(fail) {
+    if (fail) {
       throw errorResponder(
         errorTypes.EMAIL_ALREADY_TAKEN,
         'Email already taken'
@@ -97,7 +99,7 @@ async function updateUser(request, response, next) {
     const email = request.body.email;
 
     const fail = await usersService.checkEmail(email);
-    if(fail) {
+    if (fail) {
       throw errorResponder(
         errorTypes.EMAIL_ALREADY_TAKEN,
         'Email already taken'
@@ -155,20 +157,14 @@ async function updateNewPassword(request, response, next) {
     const id = request.params.id;
     const password = request.body.password;
 
-    if(!password) {
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        'passnya salah'
-      );
+    if (!password) {
+      throw errorResponder(errorTypes.INVALID_PASSWORD, 'passnya salah');
     }
 
     const newPassword = request.body.newPassword;
     const confirm_Password = request.body.confirm_Password;
-    if (newPassword !== confirm_Password){
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        'passnya salah'
-      );
+    if (newPassword !== confirm_Password) {
+      throw errorResponder(errorTypes.INVALID_PASSWORD, 'passnya salah');
     }
 
     const success = await usersService.UpdateNewPassword(id, newPassword);

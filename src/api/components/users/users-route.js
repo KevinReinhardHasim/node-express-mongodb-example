@@ -11,7 +11,9 @@ module.exports = (app) => {
   app.use('/users', route);
 
   // Get list of users
-  route.get('/', authenticationMiddleware, usersControllers.getUsers);
+  route.get('/', authenticationMiddleware, function (req, res) {
+    return usersControllers.getUsers(req, res);
+  });
 
   // Create user
   route.post(
@@ -35,7 +37,7 @@ module.exports = (app) => {
   // Delete user
   route.delete('/:id', authenticationMiddleware, usersControllers.deleteUser);
 
-    // Update user password
+  // Update user password
   route.patch(
     '/:id/change-password',
     authenticationMiddleware,

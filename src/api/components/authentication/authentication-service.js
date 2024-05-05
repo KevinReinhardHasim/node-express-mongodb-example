@@ -21,7 +21,17 @@ async function checkLoginCredentials(email, password) {
   // Because we always check the password (see above comment), we define the
   // login attempt as successful when the `user` is found (by email) and
   // the password matches.
+
+  const date = new Date();
+  const timedout = new Date(user.timedout);
+
+  if (timedout > date) {
+    return 'timedout';
+  }
+
   if (user && passwordChecked) {
+    user.attempt = 0;
+    await user.save();
     return {
       email: user.email,
       name: user.name,
@@ -30,7 +40,30 @@ async function checkLoginCredentials(email, password) {
     };
   }
 
+  let time_timedout = new Date(date.getTime() + 30 * 60000);
+  let timedout_date = time_timedout.toISOString();
+
+  user.attempt = user.attempt + 1;
+  if (user.attempt == 5) {
+    user.timedout = timedout_date;
+    await user.save();
+    return 'timedout';
+  }
+  await user.save();
+
   return null;
+}
+
+// Function to log failed login attempt
+async function logFailedLoginAttempt(username) {
+  try {
+    const attempt = new LoginAttempt({ username });
+    await attempt.save();
+
+    // Check if the user has reached the maximum failed attempts
+  } catch (err) {
+    console.error('Failed to log login attempt:', err);
+  }
 }
 
 module.exports = {

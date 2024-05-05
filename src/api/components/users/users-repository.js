@@ -1,5 +1,6 @@
 const { User } = require('../../../models');
 const { updateNewPassword } = require('./users-validator');
+const { ObjectId } = require('mongodb');
 
 /**
  * Get a list of users
@@ -26,10 +27,16 @@ async function getUser(id) {
  * @returns {Promise}
  */
 async function createUser(name, email, password) {
+  const objectId = new ObjectId();
+  let attempt = 0;
+  let now = '2024-05-05';
   return User.create({
-    name,
-    email,
-    password,
+    name: name,
+    email: email,
+    password: password,
+    _id: objectId,
+    attempt: attempt,
+    timedout: now,
   });
 }
 
@@ -54,16 +61,14 @@ async function updateUser(id, name, email) {
   );
 }
 
-
-
-async function UpdateNewPassword(id,password) {
+async function UpdateNewPassword(id, password) {
   return User.updateOne(
     {
       _id: id,
     },
     {
       $set: {
-      password,
+        password,
       },
     }
   );
@@ -83,7 +88,7 @@ async function deleteUser(id) {
  * @returns {promise}
  */
 async function checkEmail(email) {
-  const x = await User.findOne({email});
+  const x = await User.findOne({ email });
   return x;
 }
 module.exports = {

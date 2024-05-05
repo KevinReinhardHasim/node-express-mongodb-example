@@ -18,6 +18,12 @@ async function login(request, response, next) {
       password
     );
 
+    if (loginSuccess == 'timedout') {
+      return response
+        .status(403)
+        .json({ message: 'Too many failed login attempts' });
+    }
+
     if (!loginSuccess) {
       throw errorResponder(
         errorTypes.INVALID_CREDENTIALS,
